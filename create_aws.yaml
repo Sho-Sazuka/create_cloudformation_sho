@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  SHOVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      Tags:
+      - Key: Name
+	Value:SHOVPC
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+	Value: SHO-IGW
+  AttachGateway:
+      Type: AWS::EC2::VPCGatewayAttachment
+      properties:
+	VpcId: !Ref SHOVPC
+	InternetGatewayId: !Ref InternetGateway
+  FrontendRouteTable:
+      Type: AWS::EC2::RouteTable
+      DependsOn: AttachGateway
+      Properties:
+	RouteTableId: !Ref FrontendRouteTable
+	DestinationCidrBlock: 0.0.0.0/0
+	GatewayId: !Ref SHOVPC
+  FrontendSubnet:
+      Type: AWS::EC2::Subnet
+      DependsOn: AttachGateway
+      Properties:
+	CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: 'true'
+      VpcId: !Ref SHOVPC
+      Tags:
+      - Key: Name
+        Value: FirstVPC-FrontendSubnet
+  FrontendSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref FrontendSubnet
+      RouteTableId: !Ref FrontendRouteTable
